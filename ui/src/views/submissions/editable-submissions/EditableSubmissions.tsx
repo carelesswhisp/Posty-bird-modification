@@ -104,6 +104,7 @@ export class EditableSubmissions extends React.Component<Props, State> {
     submissionStore.changeOrder(result.draggableId, source.index, destination.index);
   }
 
+  
   render() {
     const submissions = this.props.submissions.filter(s =>
       SubmissionUtil.getSubmissionTitle(s)
@@ -130,7 +131,10 @@ export class EditableSubmissions extends React.Component<Props, State> {
                     loading={this.props.isLoading}
                     dataSource={submissions}
                     renderItem={(item: SubmissionPackage<Submission>) => (
-                      <EditableSubmissionListItem item={item} />
+                      <EditableSubmissionListItem 
+                      item={item}
+                      totalItems={submissions.length} 
+                     />
                     )}
                     header={
                       <div className="flex">

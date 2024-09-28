@@ -24,9 +24,10 @@ import SubmissionUtil from '../../../utils/submission.util';
 import { WebsiteRegistry } from '../../../websites/website-registry';
 import { IssueState } from './IssueState';
 import { scrollSubmissionStore } from '../../../stores/scroll-submission.store';
-
+import { submissionStore } from '../../../stores/submission.store';
 interface ListItemProps {
   item: SubmissionPackage<Submission>;
+  totalItems: number;
 }
 
 interface ListItemState {
@@ -72,7 +73,7 @@ export class EditableSubmissionListItem extends React.Component<ListItemProps, L
     });
     this.hideScheduler();
   }
-
+  
   onDuplicate() {
     if (this.disableActions) return;
     this.disableActions = true;
@@ -133,7 +134,14 @@ export class EditableSubmissionListItem extends React.Component<ListItemProps, L
         message.error('Failed to split submission.');
       });
   }
-
+  moveItem(currentIndex, offset) {
+    const newIndex = currentIndex + offset;
+    if (newIndex >= 0 && newIndex < this.props.totalItems) {
+      submissionStore.changeOrder(this.props.item.submission._id, currentIndex, newIndex);
+      this.forceUpdate(); // To ensure re-render
+    }
+  }
+  
   unsupportedAdditionalWebsites() {
     const { item } = this.props;
     if ((item.submission as FileSubmission).additional!.length) {
@@ -236,6 +244,38 @@ export class EditableSubmissionListItem extends React.Component<ListItemProps, L
                 >
                   Duplicate
                 </span>,
+                
+                <span
+                className="text-link"
+                key="move-up-5"
+                onClick={() => this.moveItem(this.props.item.submission.order, -5)}
+              >
+                Up 5
+              </span>,
+              <span
+              className="text-link"
+              key="move-down-5"
+              onClick={() => this.moveItem(this.props.item.submission.order, 5)}
+            >
+              Down 5
+            </span>,
+          
+
+              <span
+              className="text-link"
+              key="send-to-top"
+              onClick={() => this.moveItem(this.props.item.submission.order, -this.props.item.submission.order)}
+            >
+              Send to Top
+            </span>,
+            <span
+              className="text-link"
+              key="send-to-bottom"
+              onClick={() => this.moveItem(this.props.item.submission.order, this.props.totalItems - this.props.item.submission.order - 1)}
+            >
+              Send to Bottom
+            </span>,
+
                 <Popconfirm
                   disabled={this.state.disableActions}
                   cancelText="No"
@@ -251,6 +291,7 @@ export class EditableSubmissionListItem extends React.Component<ListItemProps, L
                   </Typography.Text>
                 </Popconfirm>,
                 <IssueState problems={problems} problemCount={problemCount} />
+                
               ]}
             >
               <List.Item.Meta
